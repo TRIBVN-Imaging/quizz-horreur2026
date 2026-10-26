@@ -1,0 +1,30 @@
+<body>
+<div class="stage">
+  <div class="card">
+
+    <div id="intro">
+      <div class="qcount">Quiz — 22 questions</div>
+      <h1>Films d'horreur cultes</h1>
+      <div class="intro"><p>Un quiz de difficulté moyenne sur les classiques de l'horreur, de Psychose à Get Out. Réponds à chaque question, ton score s'affiche à la fin.</p></div>
+      <button class="btn" id="startBtn">Commencer</button>
+    </div>
+
+    <div id="quiz" class="hidden">
+      <div class="qcount"><span id="qcount"></span><span id="scoreLive"></span></div>
+      <div class="progress"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="question fade" id="questionText"></div>
+      <div class="options fade" id="optionsList"></div>
+      <div id="explainBox" class="hidden"></div>
+      <button class="btn hidden" id="nextBtn">Question suivante</button>
+    </div>
+
+    <div id="result" class="hidden fade">
+      <div class="qcount">Résultat</div>
+      <div class="result-score" id="scoreText"></div>
+      <div class="result-profile" id="profileName"></div>
+      <p class="result-label" id="scoreLabel"></p>
+      <button class="btn" id="restartBtn">Refaire le quiz</button>
+    </div>
+
+  </div>
+</div>
