@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Films d'horreur cultes — Quiz</title>
+<style>
+  :root{
+    --bg:#140a0a; --bg2:#1f0f10; --card:#20100f; --ink:#ede4d3; --ink-dim:#b79e9b;
+    --blood:#8c1d1d; --accent:#c93f2d; --line:#3a1c1a; --ok:#3f7a52; --ko:#8c1d1d;
+    box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:inherit}
+  html{scroll-padding-top:env(safe-area-inset-top,0px); height:100%}
+  body{
+    margin:0; min-height:100%; background:radial-gradient(ellipse at top,var(--bg2),var(--bg));
+    color:var(--ink); font-family:Georgia,'Iowan Old Style',serif;
+    display:flex; align-items:center; justify-content:center; padding:32px 16px;
+  }
+  .stage{width:100%; max-width:580px;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:4px; padding:40px 32px; position:relative; overflow:hidden;}
+  .card::before{content:""; position:absolute; top:-40%; right:-20%; width:280px; height:280px; background:radial-gradient(circle,#4a141499,transparent 70%); pointer-events:none;}
+  h1{font-size:1.5rem; font-weight:400; line-height:1.3; margin:0 0 6px;}
+  .intro p{color:var(--ink-dim); font-size:0.98rem; line-height:1.6; margin:0 0 28px;}
+  .progress{height:2px; background:var(--line); border-radius:2px; margin-bottom:22px; overflow:hidden;}
+  .progress-fill{height:100%; background:var(--accent); width:0%; transition:width .4s ease;}
+  .qcount{font-size:0.78rem; color:var(--ink-dim); letter-spacing:.02em; margin-bottom:10px; display:flex; justify-content:space-between;}
+  .question{font-size:1.2rem; line-height:1.4; margin:0 0 22px; font-weight:400;}
+  .options{display:flex; flex-direction:column; gap:10px;}
+  .opt{text-align:left; background:transparent; border:1px solid var(--line); color:var(--ink); font-family:inherit; font-size:0.95rem; line-height:1.4; padding:13px 16px; border-radius:3px; cursor:pointer; transition:border-color .15s ease, background .15s ease;}
+  .opt:hover:not(:disabled){border-color:var(--accent); background:rgba(201,63,45,0.08);}
+  .opt:disabled{cursor:default;}
+  .opt.correct{border-color:var(--ok); background:rgba(63,122,82,0.15);}
+  .opt.wrong{border-color:var(--ko); background:rgba(140,29,29,0.18);}
+  .explain{margin-top:16px; font-size:0.9rem; line-height:1.55; color:var(--ink-dim); border-left:2px solid var(--accent); padding-left:14px;}
+  .btn{background:var(--accent); color:#1a0808; border:none; font-family:inherit; font-size:0.95rem; padding:12px 22px; border-radius:3px; cursor:pointer; margin-top:20px;}
+  .btn:hover{background:#e0523d;}
+  .hidden{display:none;}
+  .fade{animation:fade .35s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:translateY(0)}}
+  .result-score{font-size:2.4rem; margin:4px 0 8px;}
+  .result-label{color:var(--ink-dim); font-size:1rem; margin:0 0 26px;}
+  @media (max-width:480px){ .card{padding:28px 20px;} }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="card">
+
+    <div id="intro">
+      <div class="qcount">Quiz — 22 questions</div>
+      <h1>Films d'horreur cultes</h1>
+      <div class="intro"><p>Un quiz de difficulté moyenne sur les classiques de l'horreur, de Psychose à Get Out. Réponds à chaque question, ton score s'affiche à la fin.</p></div>
+      <button class="btn" id="startBtn">Commencer</button>
+    </div>
+
+    <div id="quiz" class="hidden">
+      <div class="qcount"><span id="qcount"></span><span id="scoreLive"></span></div>
+      <div class="progress"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="question fade" id="questionText"></div>
+      <div class="options fade" id="optionsList"></div>
+      <div id="explainBox" class="hidden"></div>
+      <button class="btn hidden" id="nextBtn">Question suivante</button>
+    </div>
+
+    <div id="result" class="hidden fade">
+      <div class="qcount">Résultat</div>
+      <div class="result-score" id="scoreText"></div>
+      <p class="result-label" id="scoreLabel"></p>
+      <button class="btn" id="restartBtn">Refaire le quiz</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const Q = [
+ {t:"Dans \u00ab Psychose \u00bb (1960) d'Alfred Hitchcock, o\u00f9 se d\u00e9roule la c\u00e9l\u00e8bre sc\u00e8ne de la douche ?", o:["Au Bates Motel","Dans une maison de banlieue","Dans un train","Dans un h\u00f4pital psychiatrique"], c:0, e:"Marion Crane est assassin\u00e9e dans la salle de bain de sa chambre au Bates Motel, tenu par Norman Bates."},
+ {t:"Quel est le nom du tueur masqu\u00e9 dans la saga \u00ab Halloween \u00bb ?", o:["Jason Voorhees","Michael Myers","Freddy Krueger","Leatherface"], c:1, e:"Michael Myers est le tueur silencieux au masque blanc cr\u00e9\u00e9 par John Carpenter en 1978."},
+ {t:"Dans \u00ab Freddy, les griffes de la nuit \u00bb, comment les victimes meurent-elles ?", o:["En \u00e9tat de veille","Dans leurs r\u00eaves","En regardant une cassette vid\u00e9o","En r\u00e9pondant au t\u00e9l\u00e9phone"], c:1, e:"Freddy attaque ses victimes dans leurs r\u00eaves ; s'il les tue en dormant, elles meurent r\u00e9ellement."},
+ {t:"Dans \u00ab Vendredi 13 \u00bb, qui est r\u00e9ellement le tueur du tout premier film ?", o:["Jason Voorhees","Pamela Voorhees, la m\u00e8re de Jason","Un campeur inconnu","Le gardien du camp"], c:1, e:"Dans le premier film de 1980, c'est Pamela Voorhees qui venge la mort de son fils, noy\u00e9 des ann\u00e9es plus t\u00f4t."},
+ {t:"Quel h\u00f4tel isol\u00e9 est le d\u00e9cor principal de \u00ab Shining \u00bb de Stanley Kubrick ?", o:["L'Overlook Hotel","Le Bates Motel","L'h\u00f4tel Cecil","Le Stanley Hotel"], c:0, e:"La famille Torrance s'installe comme gardiens de l'Overlook Hotel pendant l'hiver, isol\u00e9 par la neige."},
+ {t:"Dans \u00ab Scream \u00bb, quel objet Ghostface utilise-t-il pour appeler ses victimes ?", o:["Une radio","Un t\u00e9l\u00e9phone fixe","Un talkie-walkie","Un interphone"], c:1, e:"Ghostface appelle ses victimes sur leur t\u00e9l\u00e9phone fixe avant de passer \u00e0 l'attaque."},
+ {t:"Quelle arme embl\u00e9matique utilise Leatherface dans \u00ab Massacre \u00e0 la tron\u00e7onneuse \u00bb ?", o:["Une hache","Une tron\u00e7onneuse","Un couteau de boucher","Une faux"], c:1, e:"Son arme signature, qui donne son nom au film, reste la tron\u00e7onneuse."},
+ {t:"Dans \u00ab Rosemary's Baby \u00bb, de quoi Rosemary a-t-elle peur concernant son enfant \u00e0 na\u00eetre ?", o:["Qu'il soit malade","Qu'il appartienne \u00e0 une secte satanique","Qu'il soit enlev\u00e9 \u00e0 la naissance","Qu'il soit le fruit d'une exp\u00e9rience"], c:1, e:"Rosemary d\u00e9couvre peu \u00e0 peu que ses voisins forment un culte satanique qui pr\u00e9voit d'utiliser son enfant."},
+ {t:"Dans \u00ab Le Cercle \u00bb, que doit faire une victime apr\u00e8s avoir visionn\u00e9 la cassette maudite ?", o:["D\u00e9truire la cassette","Ne jamais regarder d'\u00e9cran pendant une semaine","La copier et la faire visionner \u00e0 quelqu'un d'autre","Appeler un num\u00e9ro pr\u00e9cis"], c:2, e:"La victime a sept jours pour faire visionner la cassette \u00e0 une autre personne, sans quoi Samara vient la tuer."},
+ {t:"Dans la saga \u00ab Saw \u00bb, quel est le surnom du tueur qui organise les pi\u00e8ges mortels ?", o:["Le Boucher","Jigsaw","Le Marionnettiste","L'Architecte"], c:1, e:"John Kramer, surnomm\u00e9 Jigsaw (\u00ab puzzle \u00bb), con\u00e7oit des jeux mortels."},
+ {t:"Dans \u00ab Conjuring \u00bb, qui sont les enqu\u00eateurs paranormaux au centre de l'histoire ?", o:["Ed et Lorraine Warren","Les agents du FBI","Une \u00e9quipe de chercheurs","Des pr\u00eatres exorcistes"], c:0, e:"Le film s'inspire des enqu\u00eates r\u00e9elles du couple Ed et Lorraine Warren."},
+ {t:"Dans \u00ab \u00c7a \u00bb de Stephen King, sous quelle forme Grippe-Sou appara\u00eet-il le plus souvent ?", o:["Un clown","Une poup\u00e9e","Un \u00e9pouvantail","Un animal errant"], c:0, e:"Pennywise prend le plus souvent l'apparence d'un clown pour attirer ses jeunes victimes."},
+ {t:"Dans \u00ab H\u00e9r\u00e9dit\u00e9 \u00bb, quel objet la m\u00e8re fabrique-t-elle, li\u00e9 au culte du film ?", o:["Des poup\u00e9es de chiffon","Des miniatures en diorama","Des bijoux","Des masques en bois"], c:1, e:"Annie est une artiste qui cr\u00e9e des dioramas reproduisant des sc\u00e8nes de sa propre vie."},
+ {t:"Dans \u00ab Le Projet Blair Witch \u00bb, quel postulat a marqu\u00e9 le genre found footage ?", o:["Un narrateur raconte \u00e0 la 3e personne","Les images sont pr\u00e9sent\u00e9es comme film\u00e9es par les protagonistes disparus","Le film alterne plusieurs \u00e9poques","Le film est enti\u00e8rement muet"], c:1, e:"Le film se pr\u00e9sente comme le montage de bandes retrouv\u00e9es, tourn\u00e9es par trois \u00e9tudiants jamais revenus."},
+ {t:"Dans \u00ab Carrie au bal du diable \u00bb, quel pouvoir poss\u00e8de l'h\u00e9ro\u00efne ?", o:["L'invisibilit\u00e9","La t\u00e9l\u00e9kin\u00e9sie","La pyrokin\u00e9sie","La t\u00e9l\u00e9portation"], c:1, e:"Carrie d\u00e9veloppe des pouvoirs t\u00e9l\u00e9kin\u00e9siques qu'elle utilise apr\u00e8s avoir \u00e9t\u00e9 humili\u00e9e au bal de promo."},
+ {t:"Dans \u00ab Poltergeist \u00bb, par quel appareil l'entit\u00e9 communique-t-elle d'abord ?", o:["Le t\u00e9l\u00e9phone","La t\u00e9l\u00e9vision","La radio","Une horloge"], c:1, e:"La petite Carol Anne communique avec les esprits \u00e0 travers la t\u00e9l\u00e9vision."},
+ {t:"Dans \u00ab Un Am\u00e9ricain \u00e0 Londres \u00bb, que deviennent les deux h\u00e9ros apr\u00e8s l'attaque ?", o:["L'un devient vampire","L'un meurt et revient hanter l'autre","Ils deviennent immortels","Ils perdent la m\u00e9moire"], c:1, e:"David survit mais se transforme peu \u00e0 peu, tandis que son ami mort le hante tout au long du film."},
+ {t:"Dans \u00ab The Thing \u00bb, quelle est la principale menace de la cr\u00e9ature ?", o:["Elle est invisible","Elle peut imiter parfaitement n'importe quel \u00eatre vivant","Elle contr\u00f4le les esprits \u00e0 distance","Elle n'appara\u00eet que la nuit"], c:1, e:"La cr\u00e9ature absorbe et imite ses victimes \u00e0 la perfection, semant la parano\u00efa dans l'\u00e9quipe."},
+ {t:"Dans \u00ab Child's Play \u00bb, quel est le nom de la poup\u00e9e poss\u00e9d\u00e9e ?", o:["Annabelle","Chucky","Billy","Slappy"], c:1, e:"Chucky est poss\u00e9d\u00e9e par l'esprit du tueur Charles Lee Ray gr\u00e2ce \u00e0 un rituel vaudou."},
+ {t:"Dans \u00ab Candyman \u00bb, combien de fois faut-il prononcer son nom devant un miroir ?", o:["Trois fois","Cinq fois","Sept fois","Une seule fois, \u00e0 minuit"], c:1, e:"La l\u00e9gende veut qu'il faille r\u00e9p\u00e9ter \u00ab Candyman \u00bb cinq fois devant un miroir."},
+ {t:"Dans \u00ab 28 Jours plus tard \u00bb, quelle est l'origine de l'\u00e9pid\u00e9mie ?", o:["Un virus appel\u00e9 la \u00ab Rage \u00bb, propag\u00e9 par le sang","Une radiation nucl\u00e9aire","Une mal\u00e9diction ancienne","Un champignon parasite"], c:0, e:"Le virus de la Rage se propage par contact avec le sang infect\u00e9."},
+ {t:"Dans \u00ab Get Out \u00bb, que cache r\u00e9ellement la famille d'accueil ?", o:["Un trafic d'organes classique","Un proc\u00e9d\u00e9 pour transf\u00e9rer des consciences dans le corps des invit\u00e9s","Un culte vampirique","Une exp\u00e9rience gouvernementale"], c:1, e:"La famille implante la conscience de proches \u00e2g\u00e9s dans le corps de jeunes invit\u00e9s, sous couvert d'hypnose."}
+];
+
+let current = 0, score = 0;
+
+const introEl = document.getElementById('intro');
+const quizEl = document.getElementById('quiz');
+const resultEl = document.getElementById('result');
+const qcountEl = document.getElementById('qcount');
+const scoreLiveEl = document.getElementById('scoreLive');
+const progressFill = document.getElementById('progressFill');
+const questionText = document.getElementById('questionText');
+const optionsList = document.getElementById('optionsList');
+const explainBox = document.getElementById('explainBox');
+const nextBtn = document.getElementById('nextBtn');
+
+document.getElementById('startBtn').addEventListener('click', () => {
+  introEl.classList.add('hidden'); quizEl.classList.remove('hidden'); renderQuestion();
+});
+document.getElementById('restartBtn').addEventListener('click', () => {
+  current = 0; score = 0; resultEl.classList.add('hidden'); quizEl.classList.remove('hidden'); renderQuestion();
+});
+nextBtn.addEventListener('click', () => {
+  current++;
+  if (current >= Q.length) showResult(); else renderQuestion();
+});
+
+function renderQuestion(){
+  const q = Q[current];
+  qcountEl.textContent = "Question " + (current+1) + " / " + Q.length;
+  scoreLiveEl.textContent = "Score : " + score;
+  progressFill.style.width = (current/Q.length*100) + "%";
+  questionText.textContent = q.t;
+  optionsList.innerHTML = "";
+  explainBox.classList.add('hidden'); explainBox.innerHTML = "";
+  nextBtn.classList.add('hidden');
+  q.o.forEach((label, i) => {
+    const b = document.createElement('button');
+    b.className = 'opt'; b.textContent = label;
+    b.addEventListener('click', () => selectAnswer(i, b));
+    optionsList.appendChild(b);
+  });
+  questionText.classList.remove('fade'); void questionText.offsetWidth; questionText.classList.add('fade');
+  optionsList.classList.remove('fade'); void optionsList.offsetWidth; optionsList.classList.add('fade');
+}
+
+function selectAnswer(i, btnEl){
+  const q = Q[current];
+  const allBtns = optionsList.querySelectorAll('.opt');
+  allBtns.forEach(b => b.disabled = true);
+  if (i === q.c) { btnEl.classList.add('correct'); score++; }
+  else { btnEl.classList.add('wrong'); allBtns[q.c].classList.add('correct'); }
+  explainBox.innerHTML = q.e;
+  explainBox.className = 'explain fade';
+  scoreLiveEl.textContent = "Score : " + score;
+  nextBtn.classList.remove('hidden');
+}
+
+function showResult(){
+  progressFill.style.width = "100%";
+  quizEl.classList.add('hidden'); resultEl.classList.remove('hidden');
+  document.getElementById('scoreText').textContent = score + " / " + Q.length;
+  let label;
+  const pct = score / Q.length;
+  if (pct >= 0.85) label = "Expert·e du genre, rien ne t'échappe.";
+  else if (pct >= 0.6) label = "Bon·ne cinéphile de l'horreur !";
+  else if (pct >= 0.35) label = "Quelques classiques à revoir.";
+  else label = "L'occasion d'un marathon horreur avant Halloween.";
+  document.getElementById('scoreLabel').textContent = label;
+}
+</script>
+</body>
+</html>
